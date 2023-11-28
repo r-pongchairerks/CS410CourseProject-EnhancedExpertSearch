@@ -93,10 +93,11 @@ var doSearch = function() {
     if (searchTerm!='')
     {
     var num_fetched_res = 0
-    fetch("http://localhost:8095/search", {
+    fetch("http://127.0.0.1:8095/search", {
     // fetch("http://expertsearch.centralus.cloudapp.azure.com/search", {
         method: "POST",
         headers: {
+            "Access-Control-Allow-Origin": "http://127.0.0.1:8095",
             "Content-Type": "application/json",
         },
         body: JSON.stringify(data)
