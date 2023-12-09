@@ -10,6 +10,7 @@ import sys
 import re
 
 
+
 app = Flask(__name__) 
 environ = 'development'
 dataconfig = json.loads(open("config.json", "r").read())
@@ -128,23 +129,97 @@ def wiki_search(query):
                 return wikipedia.summary(new_query)
             except Exception:
                 pass
-    # Woo: add guidance on how they should ask question here!
     return "I don't know about "+query
 
+# sample test data
+faculties = []
+faculty1 = {
+    "url": "http://university.edu/faculty/john_doe",
+    "name": "John Doe",
+    "research_areas": ["Machine Learning", "Artificial Intelligence"],
+    "research_interests": "Deep learning, neural networks, and AI ethics",
+    "education": "Ph.D. in Computer Science from MIT"
+}
+faculty2 = {
+    "url": "http://university.edu/faculty/jane_smith",
+    "name": "Jane Smith",
+    "research_areas": ["Quantum Computing", "Cryptography", "Machine Learning"],
+    "research_interests": "Quantum algorithms and security protocols",
+    "education": "Ph.D. in Physics from Harvard"
+}
+faculties.append(faculty1)
+faculties.append(faculty2)
+
+def get_info_from_name(query):
+    for faculty in faculties:
+        if faculty["name"].lower() == query.lower():
+            faculty_info = (
+                "Name: {}\n"
+                "URL: {}\n"
+                "Research Areas: {}\n"
+                "Research Interests: {}\n"
+                "Education: {}".format(
+                    faculty['name'],
+                    faculty['url'],
+                    ', '.join(faculty['research_areas']),
+                    faculty['research_interests'],
+                    faculty['education']
+                )
+            )
+            return faculty_info
+    return "No faculty member found with the name: {}".format(query)
+
+def get_names_research_areas(query):
+    matching_faculties = []
+
+    for faculty in faculties:
+        if any(query.lower() == area.lower() for area in faculty["research_areas"]):
+            faculty_info = (
+                "Name: {}\n"
+                "URL: {}\n"
+                "Research Areas: {}\n"
+                "Research Interests: {}\n"
+                "Education: {}\n\n".format(
+                    faculty['name'],
+                    faculty['url'],
+                    ', '.join(faculty['research_areas']),
+                    faculty['research_interests'],
+                    faculty['education']
+                )
+            )
+            matching_faculties.append(faculty_info)
+
+    if matching_faculties:
+        return ''.join(matching_faculties)
+    else:
+        return "No faculty member found whose research area is in: {}".format(query)
+
+
+@app.route("/chat", methods=["GET"])
 def search_expert_from_query(query):
-    # Woo: please fill in your logic here
-    return "export info"
+    # Regex patterns for different types of queries
+    name_search_pattern = re.compile(r"^search name: (.+)")
+    area_search_pattern = re.compile(r"^search area: (.+)")
+    
+    name_match = name_search_pattern.match(query)
+    if name_match:
+        faculty_name = name_match.group(1).strip()
+        return get_info_from_name(faculty_name)
+    
+    area_match = area_search_pattern.match(query)
+    if area_match:
+        research_area = area_match.group(1).strip()
+        return get_names_research_areas(research_area)
+    
+    return "Invalid search query"
 
 @app.route("/chat", methods=["POST"])
 def get_chat_response():
-    data = json.loads(request.data)
-    query = data["query"]
-    # Woo: regex for the keyword here,
+    data = json.loads(request.data.decode('utf-8'))
+    query = data["query"].lower()
     if query.startswith("search"):
         return jsonify({
-            "response": "This is dummy code"
-            # Woo: uncomment this line
-            # "response": search_expert_from_query(query)
+            "response": search_expert_from_query(query)
         })
     else:
         return jsonify({
