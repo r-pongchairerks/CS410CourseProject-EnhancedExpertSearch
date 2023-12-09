@@ -1,5 +1,6 @@
 from flask import Flask
 from flask import render_template, request, jsonify
+import wikipedia
 import json
 import os
 import metapy
@@ -20,7 +21,6 @@ index = metapy.index.make_inverted_index(app.searchconfig)
 query = metapy.index.Document()
 uni_list = json.loads(open(dataconfig[environ]["unispath"],'r').read())["unis"]
 loc_list = json.loads(open(dataconfig[environ]["locspath"],'r').read())["locs"]
-
 
 @app.route('/')
 def home():
@@ -50,11 +50,6 @@ def filtered_results(results,num_results,min_score,selected_uni_filters,selected
             if res_cnt == num_results:
                 break
     return filtered_results,universities,states,countries
-
-
-
-
-
 
 @app.route('/search', methods=['POST'])
 def search():
@@ -95,8 +90,6 @@ def search():
         "docs": docs
     })
 
-
-
 @app.route("/admin/ranker/get")
 def get_ranker():
     ranker_path = app.rootpath + "/expertsearch/ranker.py"
@@ -125,6 +118,38 @@ def set_ranker():
         f.close()
 
     return "200"
+
+def wiki_search(query):
+    try:
+        return wikipedia.summary(query)
+    except Exception:
+        for new_query in wikipedia.search(query):
+            try:
+                return wikipedia.summary(new_query)
+            except Exception:
+                pass
+    # Woo: add guidance on how they should ask question here!
+    return "I don't know about "+query
+
+def search_expert_from_query(query):
+    # Woo: please fill in your logic here
+    return "export info"
+
+@app.route("/chat", methods=["POST"])
+def get_chat_response():
+    data = json.loads(request.data)
+    query = data["query"]
+    # Woo: regex for the keyword here,
+    if query.startswith("search"):
+        return jsonify({
+            "response": "This is dummy code"
+            # Woo: uncomment this line
+            # "response": search_expert_from_query(query)
+        })
+    else:
+        return jsonify({
+            "response": wiki_search(query)
+        })
 
 def _get_doc_previews(doc_names,querytext):
     return list(map(lambda d: _get_preview(d,querytext), doc_names))
