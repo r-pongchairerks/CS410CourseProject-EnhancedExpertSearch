@@ -1,6 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
 import re
+import os
+#import jsonlines
 
 # initialize the data structure where to
 # store the scraped data
@@ -10,7 +12,8 @@ visited_pages = set()
 # initialize the list of discovered urls
 # with the first page to visit
 urls = ["https://cs.illinois.edu/about/people"]
-#urls = ["https://cs.illinois.edu"]
+
+count = 0
 
 # until all pages have been visited
 while len(urls) != 0:
@@ -37,33 +40,48 @@ while len(urls) != 0:
         if '/about/people/department-faculty' in url and "https://cs.illinois.edu" + url not in visited_pages:
             urls.append("https://cs.illinois.edu" + url)
             
-    faculty = {}
-    faculty["url"] = current_url
-    faculty["name"] = soup.find("figcaption").text.strip()
-    faculty["research_areas"] = []
-    faculty["research_interests"] = []
-    faculty["education"] = []
-    for ra in soup.find("div", attrs={"class": "extProfileAREA"}).find_all("li"):
-        faculty["research_areas"].append(ra.text)
-    ri_flag = False
-    ed_flag = False
-    for element in soup.find("div", attrs={"class": "directory-profile"}).find_all():
-        if element.text.lower().strip() == "education":
-            ed_flag = True
-            continue
-        if element.text == "Research Interests":
-            ri_flag = True
-            ed_flag = False
-            continue
-        if element.text == "Research Areas":
-            ri_flag = False
-        if ed_flag:
-            faculty["education"].append(element.text.replace("\n", " ").strip())
+    if 'https://cs.illinois.edu/about/people/department-faculty/' in current_url:
+        # faculty = {}
+        # faculty["url"] = current_url
+        # faculty["name"] = soup.find("figcaption").text.strip()
+        # faculty["research_areas"] = []
+        # faculty["research_interests"] = []
+        # faculty["education"] = []
 
-        if ri_flag and "\n" not in element.text:
-            faculty["research_interests"] += [i.strip() for i in element.text.split(',')]
+        file_data = open('data/compiled_bios/' + str(count)+ '.txt', "a")
+        file_data.write(soup.find("figcaption").text.strip() + ", ")
 
-    faculties.append(faculty)
+        for ra in soup.find("div", attrs={"class": "extProfileAREA"}).find_all("li"):
+            #faculty["research_areas"].append(ra.text)
+            file_data.write(ra.text + ", ")
+        ri_flag = False
+        ed_flag = False
+        for element in soup.find("div", attrs={"class": "directory-profile"}).find_all():
+            if element.text.lower().strip() == "education":
+                ed_flag = True
+                continue
+            if element.text == "Research Interests":
+                ri_flag = True
+                ed_flag = False
+                continue
+            if element.text == "Research Areas":
+                ri_flag = False
+            if ed_flag:
+                #faculty["education"].append(element.text.replace("\n", " ").strip())
+                file_data.write(element.text.replace("\n", " ").strip() + " ")
+
+            if ri_flag and "\n" not in element.text:
+                #faculty["research_interests"] += [i.strip() for i in element.text.split(',')]
+                file_data.write(", " + element.text)
+        file_data.close()
+        count = count + 1
+
+        #faculties.append(faculty)
+
+# with jsonlines.open('webcrawler_data.jsonl', mode='w') as writer:
+#     for item in faculties:
+#         writer.write(item)
+    
     
 #print(faculties)
 
