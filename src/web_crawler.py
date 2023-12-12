@@ -50,10 +50,10 @@ while len(urls) != 0:
 
         file_data = open('data/compiled_bios/' + str(count)+ '.txt', "a")
         file_metadata = open('data/compiled_bios/metadata.dat', "a")
-        file_metadata.write(str(count)+ '.txt\t' + "University of Illinois at Urbana-Champaign      Computer Science         ")
+        file_metadata.write(str(count)+ '.txt\t' + "University of Illinois at Urbana-Champaign\tComputer Science\t")
         file_metadata.write(soup.find("figcaption").text.strip().split(" ")[0] + " " + soup.find("figcaption").text.strip().split(" ")[1])
-        file_metadata.write("  " + current_url)
-        file_metadata.write("       Illinois        United States   None\n")
+        file_metadata.write("\t" + current_url)
+        file_metadata.write("\tIllinois\tUnited States\tNone\n")
 
         file_data.write(soup.find("figcaption").text.strip() + ", ")
 
