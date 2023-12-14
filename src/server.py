@@ -218,17 +218,20 @@ def get_chat_response():
     query = data["query"].lower()
     if query.startswith("hello") or query.startswith("hi") or query.startswith("what's up"):
         return jsonify({
-            "docs": "How can I help you? You can say 'Search' follows by area of research to run the expert search or start asking anything from wikipedia."
+            "docs": "How can I help you? You can say 'Search' follows by area of research to run the expert search or start asking anything from wikipedia.",
+            "type": "auto-text"
         })
     elif query.startswith("search"):
         # request = 
-        # return jsonify({
-        #     "response": search_expert_from_query(query)
-        # })
-        return redirect(url_for('search'), code=307)
+        return jsonify({
+            "docs": query[6:],
+            "type": "search"
+        })
+        # return redirect(url_for('search'), code=307)
     else:
         return jsonify({
-            "docs": wiki_search(query)
+            "docs": wiki_search(query),
+            "type": "Wikipedia"
         })
 
 def _get_doc_previews(doc_names,querytext):

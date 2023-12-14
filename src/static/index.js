@@ -41,6 +41,10 @@ const generateResponse = (chatElement) => {
                                 "selected_uni_filters": selected_uni_filters})
     }).then(res => res.json()).then(data => {
         messageElement.textContent = data.docs;
+        if (data.type == "search") {
+            searchTerm = data.docs;
+            doSearch();
+        }
     }).catch(() => {
         messageElement.classList.add("error");
         messageElement.textContent = "Oops! Something went wrong. Please try again.";
