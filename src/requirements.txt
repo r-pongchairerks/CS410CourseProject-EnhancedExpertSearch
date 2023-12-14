@@ -1,6 +1,7 @@
 aniso8601==4.1.0
 asn1crypto==0.24.0
 Authlib==0.10
+bs4==0.0.1
 certifi==2018.11.29
 cffi==1.11.5
 chardet==3.0.4
