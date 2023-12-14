@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, redirect, url_for
 from flask import render_template, request, jsonify
 import wikipedia
 import json
@@ -79,7 +79,6 @@ def search():
     depts = [index.metadata(res[0]).get('department') for res in results]
     fac_names = [index.metadata(res[0]).get('fac_name') for res in results]
     fac_urls = [index.metadata(res[0]).get('fac_url') for res in results]
-   
 
     previews = _get_doc_previews(doc_names,querytext)
     emails = [index.metadata(res[0]).get('email') for res in results]
@@ -132,98 +131,104 @@ def wiki_search(query):
     return "I don't know about "+query
 
 # sample test data
-faculties = []
-faculty1 = {
-    "url": "http://university.edu/faculty/john_doe",
-    "name": "John Doe",
-    "research_areas": ["Machine Learning", "Artificial Intelligence"],
-    "research_interests": "Deep learning, neural networks, and AI ethics",
-    "education": "Ph.D. in Computer Science from MIT"
-}
-faculty2 = {
-    "url": "http://university.edu/faculty/jane_smith",
-    "name": "Jane Smith",
-    "research_areas": ["Quantum Computing", "Cryptography", "Machine Learning"],
-    "research_interests": "Quantum algorithms and security protocols",
-    "education": "Ph.D. in Physics from Harvard"
-}
-faculties.append(faculty1)
-faculties.append(faculty2)
+# faculties = []
+# faculty1 = {
+#     "url": "http://university.edu/faculty/john_doe",
+#     "name": "John Doe",
+#     "research_areas": ["Machine Learning", "Artificial Intelligence"],
+#     "research_interests": "Deep learning, neural networks, and AI ethics",
+#     "education": "Ph.D. in Computer Science from MIT"
+# }
+# faculty2 = {
+#     "url": "http://university.edu/faculty/jane_smith",
+#     "name": "Jane Smith",
+#     "research_areas": ["Quantum Computing", "Cryptography", "Machine Learning"],
+#     "research_interests": "Quantum algorithms and security protocols",
+#     "education": "Ph.D. in Physics from Harvard"
+# }
+# faculties.append(faculty1)
+# faculties.append(faculty2)
 
-def get_info_from_name(query):
-    for faculty in faculties:
-        if faculty["name"].lower() == query.lower():
-            faculty_info = (
-                "Name: {}\n"
-                "URL: {}\n"
-                "Research Areas: {}\n"
-                "Research Interests: {}\n"
-                "Education: {}".format(
-                    faculty['name'],
-                    faculty['url'],
-                    ', '.join(faculty['research_areas']),
-                    faculty['research_interests'],
-                    faculty['education']
-                )
-            )
-            return faculty_info
-    return "No faculty member found with the name: {}".format(query)
+# def get_info_from_name(query):
+#     for faculty in faculties:
+#         if faculty["name"].lower() == query.lower():
+#             faculty_info = (
+#                 "Name: {}\n"
+#                 "URL: {}\n"
+#                 "Research Areas: {}\n"
+#                 "Research Interests: {}\n"
+#                 "Education: {}".format(
+#                     faculty['name'],
+#                     faculty['url'],
+#                     ', '.join(faculty['research_areas']),
+#                     faculty['research_interests'],
+#                     faculty['education']
+#                 )
+#             )
+#             return faculty_info
+#     return "No faculty member found with the name: {}".format(query)
 
-def get_names_research_areas(query):
-    matching_faculties = []
+# def get_names_research_areas(query):
+#     matching_faculties = []
 
-    for faculty in faculties:
-        if any(query.lower() == area.lower() for area in faculty["research_areas"]):
-            faculty_info = (
-                "Name: {}\n"
-                "URL: {}\n"
-                "Research Areas: {}\n"
-                "Research Interests: {}\n"
-                "Education: {}\n\n".format(
-                    faculty['name'],
-                    faculty['url'],
-                    ', '.join(faculty['research_areas']),
-                    faculty['research_interests'],
-                    faculty['education']
-                )
-            )
-            matching_faculties.append(faculty_info)
+#     for faculty in faculties:
+#         if any(query.lower() == area.lower() for area in faculty["research_areas"]):
+#             faculty_info = (
+#                 "Name: {}\n"
+#                 "URL: {}\n"
+#                 "Research Areas: {}\n"
+#                 "Research Interests: {}\n"
+#                 "Education: {}\n\n".format(
+#                     faculty['name'],
+#                     faculty['url'],
+#                     ', '.join(faculty['research_areas']),
+#                     faculty['research_interests'],
+#                     faculty['education']
+#                 )
+#             )
+#             matching_faculties.append(faculty_info)
 
-    if matching_faculties:
-        return ''.join(matching_faculties)
-    else:
-        return "No faculty member found whose research area is in: {}".format(query)
+#     if matching_faculties:
+#         return ''.join(matching_faculties)
+#     else:
+#         return "No faculty member found whose research area is in: {}".format(query)
 
 
-@app.route("/chat", methods=["GET"])
-def search_expert_from_query(query):
-    # Regex patterns for different types of queries
-    name_search_pattern = re.compile(r"^search name: (.+)")
-    area_search_pattern = re.compile(r"^search area: (.+)")
+# @app.route("/chat", methods=["GET"])
+# def search_expert_from_query(query):
+#     # Regex patterns for different types of queries
+#     name_search_pattern = re.compile(r"^search name: (.+)")
+#     area_search_pattern = re.compile(r"^search area: (.+)")
     
-    name_match = name_search_pattern.match(query)
-    if name_match:
-        faculty_name = name_match.group(1).strip()
-        return get_info_from_name(faculty_name)
+#     name_match = name_search_pattern.match(query)
+#     if name_match:
+#         faculty_name = name_match.group(1).strip()
+#         return get_info_from_name(faculty_name)
     
-    area_match = area_search_pattern.match(query)
-    if area_match:
-        research_area = area_match.group(1).strip()
-        return get_names_research_areas(research_area)
+#     area_match = area_search_pattern.match(query)
+#     if area_match:
+#         research_area = area_match.group(1).strip()
+#         return get_names_research_areas(research_area)
     
-    return "Invalid search query"
+#     return "Invalid search query"
 
 @app.route("/chat", methods=["POST"])
 def get_chat_response():
     data = json.loads(request.data.decode('utf-8'))
     query = data["query"].lower()
-    if query.startswith("search"):
+    if query.startswith("hello") or query.startswith("hi") or query.startswith("what's up"):
         return jsonify({
-            "response": search_expert_from_query(query)
+            "docs": "How can I help you? You can say 'Search' follows by area of research to run the expert search or start asking anything from wikipedia."
         })
+    elif query.startswith("search"):
+        # request = 
+        # return jsonify({
+        #     "response": search_expert_from_query(query)
+        # })
+        return redirect(url_for('search'), code=307)
     else:
         return jsonify({
-            "response": wiki_search(query)
+            "docs": wiki_search(query)
         })
 
 def _get_doc_previews(doc_names,querytext):

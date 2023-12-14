@@ -33,9 +33,14 @@ const generateResponse = (chatElement) => {
             "Access-Control-Allow-Origin": "*",
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({"query": userMessage})
+
+
+        body: JSON.stringify({"query": userMessage,
+                                "num_results": numResults,
+                                "selected_loc_filters" : selected_loc_filters,
+                                "selected_uni_filters": selected_uni_filters})
     }).then(res => res.json()).then(data => {
-        messageElement.textContent = data.response;
+        messageElement.textContent = data.docs;
     }).catch(() => {
         messageElement.classList.add("error");
         messageElement.textContent = "Oops! Something went wrong. Please try again.";
